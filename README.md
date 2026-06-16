@@ -1,16 +1,12 @@
-# React + Vite
+# Todo Management Application
+A Todo Management Application built with React. Features include pagination, debounced search, CRUD operations via the JSONPlaceholder API, and form validation.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Features
+- __Initial Data Fetching__: Retrieves todos from the JSONPlaceholder API on component mount.
+- __Pagination__: Client-side pagination displaying 10 items per page with full navigation controls.
+- __Debounced Search__: Filter todos by title with a 500ms debounce mechanism.
+- __CRUD Operations__:
+    - __Create__: Add new todos with form validation.
+    - __Read__: Display todos in a table format with status (Completed/Pending).
+    - __Update__: Edit existing titles and statuses without refreshing the page.
+    - __Delete__: Remove todos with a confirmation prompt.
