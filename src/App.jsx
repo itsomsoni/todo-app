@@ -1,6 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import "./App.css";
-import { createTodo, deleteTodo, fetchTodos, updateTodo } from "./services/todoService";
+import {
+  createTodo,
+  deleteTodo,
+  fetchTodos,
+  updateTodo,
+} from "./services/todoService";
 import TodoTable from "./components/TodoTable";
 import TodoForm from "./components/TodoForm";
 import useDebounce from "./hooks/useDebounce";
@@ -162,10 +167,14 @@ function App() {
     try {
       // Use id 1 as fallback for API
       const apiId = id > 200 ? 1 : id;
-      await deleteTodo(apiId);
-      setTodos((prev) => prev.filter((todo) => todo.id !== id));
-      if (paginatedTodos.length === 1 && currentPage > 1) {
-        setCurrentPage((prev) => prev - 1);
+      const deleted = await deleteTodo(apiId);
+      if (deleted) {
+        setTodos((prev) => prev.filter((todo) => todo.id !== id));
+        if (paginatedTodos.length === 1 && currentPage > 1) {
+          setCurrentPage((prev) => prev - 1);
+        }
+      } else {
+        setError("Failed to delete todo. Please try again.");
       }
     } catch (err) {
       setError(`Failed to delete todo. Please try again. - ${err.message}`);
