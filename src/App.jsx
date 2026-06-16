@@ -1,16 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import "./App.css";
-import {
-  createTodo,
-  deleteTodo,
-  fetchTodos,
-  updateTodo,
-} from "../../todo-app/src/services/todoService";
-import TodoTable from "../../todo-app/src/components/TodoTable";
-import TodoForm from "../../todo-app/src/components/TodoForm";
-import useDebounce from "../../todo-app/src/hooks/useDebounce";
-import Pagination from "../../todo-app/src/components/Pagination";
-import SearchBar from "../../todo-app/src/components/SearchBar";
+import { createTodo, deleteTodo, fetchTodos, updateTodo } from "./services/todoService";
+import TodoTable from "./components/TodoTable";
+import TodoForm from "./components/TodoForm";
+import useDebounce from "./hooks/useDebounce";
+import Pagination from "./components/Pagination";
+import SearchBar from "./components/SearchBar";
 
 const ITEMS_PER_PAGE = 10;
 const STORAGE_KEY = "todo_app_data";
