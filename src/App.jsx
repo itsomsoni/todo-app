@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "./App.css";
 import {
   createTodo,
@@ -8,8 +8,11 @@ import {
 } from "../../todo-app/src/services/todoService";
 import TodoTable from "../../todo-app/src/components/TodoTable";
 import TodoForm from "../../todo-app/src/components/TodoForm";
+import useDebounce from "../../todo-app/src/hooks/useDebounce";
+import Pagination from "../../todo-app/src/components/Pagination";
+import SearchBar from "../../todo-app/src/components/SearchBar";
 
-// const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 10;
 const STORAGE_KEY = "todo_app_data";
 
 const getStoredTodos = () => {
@@ -42,6 +45,11 @@ function App() {
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 200);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Fetch Todos On Load
   useEffect(() => {
     const loadTodos = async () => {
@@ -73,6 +81,26 @@ function App() {
       storeTodos(todos);
     }
   }, [todos]);
+
+  /* Pagination & Search */
+  const filteredTodos = useMemo(() => {
+    if (!debouncedSearch.trim()) return todos;
+    return todos.filter((todo) =>
+      todo.title.toLowerCase().includes(debouncedSearch.toLowerCase()),
+    );
+  }, [todos, debouncedSearch]);
+
+  const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
+
+  const paginatedTodos = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredTodos.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredTodos, currentPage]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   /* Todo Form Handlers */
   const handleEditClick = (todo) => {
@@ -138,6 +166,9 @@ function App() {
       const apiId = id > 200 ? 1 : id;
       await deleteTodo(apiId);
       setTodos((prev) => prev.filter((todo) => todo.id !== id));
+      if (paginatedTodos.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
     } catch (err) {
       setError(`Failed to delete todo. Please try again. - ${err.message}`);
     }
@@ -158,6 +189,10 @@ function App() {
 
         {/* Add Button */}
         <div className="toolbar">
+          <SearchBar
+            searchTerm={searchTerm}
+            onSearchChange={(val) => setSearchTerm(val)}
+          />
           <button className="btn-primary" onClick={handleAddClick}>
             + Add Todo
           </button>
@@ -178,9 +213,18 @@ function App() {
         {/* Table */}
         {!loading && (
           <TodoTable
-            todos={todos}
+            todos={paginatedTodos}
             onEdit={handleEditClick}
             onDelete={handleDelete}
+          />
+        )}
+
+        {/* Pagination */}
+        {!loading && filteredTodos.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         )}
       </div>
