@@ -130,6 +130,7 @@ function App() {
       setTodos((prev) => [newTodo, ...prev]);
       setShowForm(false);
     } catch (err) {
+      setShowForm(false);
       setError(`Failed to create todo. Please try again. - ${err.message}`);
     }
   };
@@ -152,6 +153,8 @@ function App() {
       setShowForm(false);
       setSelectedTodo(null);
     } catch (err) {
+      setShowForm(false);
+      setSelectedTodo(null);
       setError(`Failed to update todo. Please try again. - ${err.message}`);
     }
   };
