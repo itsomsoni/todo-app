@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import { fetchTodos } from "../../todo-app/src/services/todoService";
+import {
+  createTodo,
+  fetchTodos,
+  updateTodo,
+} from "../../todo-app/src/services/todoService";
 import TodoTable from "../../todo-app/src/components/TodoTable";
+import TodoForm from "../../todo-app/src/components/TodoForm";
 
 // const ITEMS_PER_PAGE = 10;
 const STORAGE_KEY = "todo_app_data";
@@ -23,12 +28,20 @@ const storeTodos = (todos) => {
   }
 };
 
+const getNextId = (todos) => {
+  if (todos.length === 0) return 1;
+  return Math.max(...todos.map((t) => t.id)) + 1;
+};
+
 function App() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ── Fetch Todos On Load ───────────────────────
+  const [selectedTodo, setSelectedTodo] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  // Fetch Todos On Load
   useEffect(() => {
     const loadTodos = async () => {
       try {
@@ -53,12 +66,66 @@ function App() {
     loadTodos();
   }, []);
 
-  // ── Sync Todos To LocalStorage ─────────────────
+  // Sync Todos To LocalStorage
   useEffect(() => {
     if (todos.length > 0) {
       storeTodos(todos);
     }
   }, [todos]);
+
+  /* Todo Form Handlers */
+  const handleEditClick = (todo) => {
+    setSelectedTodo(todo);
+    setShowForm(true);
+  };
+  
+  const handleAddClick = () => {
+    setSelectedTodo(null);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setSelectedTodo(null);
+  };
+
+  const handleCreate = async (formData) => {
+    try {
+      await createTodo(formData);
+      const newTodo = {
+        id: getNextId(todos), // clean sequential ID
+        title: formData.title,
+        completed: formData.completed,
+        userId: 1,
+      };
+      setTodos((prev) => [newTodo, ...prev]);
+      setShowForm(false);
+    } catch (err) {
+      setError(`Failed to create todo. Please try again. - ${err.message}`);
+    }
+  };
+
+  const handleUpdate = async (formData) => {
+    try {
+      // Use id 1 as fallback for API
+      // since JSONPlaceholder only accepts 1-200
+      const apiId = formData.id > 200 ? 1 : formData.id;
+      await updateTodo({ ...formData, id: apiId });
+
+      const updatedTodo = {
+        ...formData,
+        title: formData.title,
+        completed: formData.completed,
+      };
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === formData.id ? updatedTodo : todo)),
+      );
+      setShowForm(false);
+      setSelectedTodo(null);
+    } catch (err) {
+      setError(`Failed to update todo. Please try again. - ${err.message}`);
+    }
+  };
 
   return (
     <>
@@ -73,12 +140,28 @@ function App() {
           </div>
         )}
 
+        {/* Add Button */}
+        <div className="toolbar">
+          <button className="btn-primary" onClick={handleAddClick}>
+            + Add Todo
+          </button>
+        </div>
+
+        {/* Form — Create or Edit */}
+        {showForm && (
+          <TodoForm
+            selectedTodo={selectedTodo}
+            onSubmit={selectedTodo ? handleUpdate : handleCreate}
+            onCancel={handleCancel}
+          />
+        )}
+
         {/* Loading */}
         {loading && <div className="loading">Loading todos...</div>}
 
         {/* Table */}
         {!loading && (
-          <TodoTable todos={todos} onEdit={() => {}} onDelete={() => {}} />
+          <TodoTable todos={todos} onEdit={handleEditClick} onDelete={() => {}} />
         )}
       </div>
     </>
