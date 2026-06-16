@@ -1,6 +1,6 @@
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   const getPageNumbers = () => {
-    const delta = 2; // How many pages to show around the current page
+    const delta = 2;
     const range = [];
     const rangeWithDots = [];
     let l;
@@ -29,6 +29,16 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
     return rangeWithDots;
   };
 
+  const handleDirectInput = (e) => {
+    if (e.key === "Enter") {
+      const page = parseInt(e.target.value);
+      if (page >= 1 && page <= totalPages) {
+        onPageChange(page);
+        e.target.value = "";
+      }
+    }
+  };
+
   return (
     <>
       <div className="pagination-container">
@@ -44,7 +54,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
           {getPageNumbers().map((page, index) => (
             <button
               key={index}
-              className={`page-btn ${currentPage === page ? "active" : ""} ${page === "..." ? "dots" : ""}`}
+              className={`page-btn ${currentPage === page ? "active" : ""} ${
+                page === "..." ? "dots" : ""
+              }`}
               onClick={() => page !== "..." && onPageChange(page)}
               disabled={page === "..."}
             >
@@ -64,6 +76,19 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         <span className="page-info">
           Page {currentPage} of {totalPages}
         </span>
+
+        {/* Direct Page Navigation */}
+        <div className="direct-input-container">
+          <span className="direct-input-label">Go to:</span>
+          <input
+            type="number"
+            className="direct-page-input"
+            min={1}
+            max={totalPages}
+            placeholder="#"
+            onKeyDown={handleDirectInput}
+          />
+        </div>
       </div>
     </>
   );
