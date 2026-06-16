@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import {
   createTodo,
+  deleteTodo,
   fetchTodos,
   updateTodo,
 } from "../../todo-app/src/services/todoService";
@@ -78,7 +79,7 @@ function App() {
     setSelectedTodo(todo);
     setShowForm(true);
   };
-  
+
   const handleAddClick = () => {
     setSelectedTodo(null);
     setShowForm(true);
@@ -127,6 +128,21 @@ function App() {
     }
   };
 
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this todo?",
+    );
+    if (!confirmed) return;
+    try {
+      // Use id 1 as fallback for API
+      const apiId = id > 200 ? 1 : id;
+      await deleteTodo(apiId);
+      setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    } catch (err) {
+      setError(`Failed to delete todo. Please try again. - ${err.message}`);
+    }
+  };
+
   return (
     <>
       <div className="app-container">
@@ -161,7 +177,11 @@ function App() {
 
         {/* Table */}
         {!loading && (
-          <TodoTable todos={todos} onEdit={handleEditClick} onDelete={() => {}} />
+          <TodoTable
+            todos={todos}
+            onEdit={handleEditClick}
+            onDelete={handleDelete}
+          />
         )}
       </div>
     </>
